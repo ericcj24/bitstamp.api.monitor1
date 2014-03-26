@@ -44,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JFrame;
 
 import org.math.plot.Plot2DPanel;
+import org.math.plot.plotObjects.BaseLabel;
 
 
 
@@ -146,7 +147,16 @@ public class MenuDemo implements ActionListener, ItemListener {
                 
 				Plot2DPanel plot = new Plot2DPanel();
                 plot.addLinePlot("my plot", x, y);
+                // add a title
+                BaseLabel title = new BaseLabel("Transactions", Color.RED, 0.5, 1.1);
+                title.setFont(new Font("Courier", Font.BOLD, 20));
+                plot.addPlotable(title);
+                // set axis label
+                plot.setAxisLabel(0, "time");
+                plot.setAxisLabel(1, "price");
                 
+                
+                // clear previews display, update with new display
                 int componentCount = contentPane.getComponentCount();
                 if(componentCount > 1){
                 	contentPane.remove(1);
@@ -173,6 +183,15 @@ public class MenuDemo implements ActionListener, ItemListener {
                 
 				Plot2DPanel plot = new Plot2DPanel();
                 plot.addLinePlot("my plot", x, y);
+                // add a title
+                BaseLabel title = new BaseLabel("Order Book", Color.RED, 0.5, 1.1);
+                title.setFont(new Font("Courier", Font.BOLD, 20));
+                plot.addPlotable(title);
+                // set axis label
+                plot.setAxisLabel(0, "price");
+                plot.setAxisLabel(1, "total buy");
+                
+                // clear previews display, update with new display
                 int componentCount = contentPane.getComponentCount();
                 if(componentCount > 1){
                 	contentPane.remove(1);
