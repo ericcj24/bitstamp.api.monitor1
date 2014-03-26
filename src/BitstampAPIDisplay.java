@@ -29,26 +29,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */ 
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 
+import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
-import javax.swing.JFrame;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleInsets;
 
-import org.math.plot.Plot2DPanel;
-import org.math.plot.plotObjects.BaseLabel;
 
-
-
-public class MenuDemo implements ActionListener, ItemListener {
+public class BitstampAPIDisplay implements ActionListener, ItemListener {
 	static JFrame frame = new JFrame("MenuDemo");
 	JPanel contentPane;
 	JTextArea output;
@@ -136,32 +154,53 @@ public class MenuDemo implements ActionListener, ItemListener {
         if(selectedItem == "Transactions"){
         	output.append(selectedItem + newline);
         	try {
-				Vector<Vector<Double>> array = TransactionAPI.HttpGetTransactions();
-				int n = array.get(0).size();
-                double[] x = new double[n];
-                double[] y = new double[n];
-                for(int i=0; i<n; i++){
-                	x[i]  = array.get(0).get(i);
-                	y[i]  = array.get(1).get(i);;
+                
+                Vector<Vector<Double>> array = TransactionAPI.HttpGetTransactions();
+    			int n = array.get(0).size();
+    			TimeSeries s1 = new TimeSeries("Transactions");
+    			for(int i=0; i<n; i++){
+    				long dateLong = (long) (array.get(0).get(i)*1000);
+    		    	Date date = new Date(dateLong);
+    		    	Millisecond temp = new Millisecond(date);
+    		    	s1.addOrUpdate(temp, array.get(1).get(i));
                 }
-                
-				Plot2DPanel plot = new Plot2DPanel();
-                plot.addLinePlot("my plot", x, y);
-                // add a title
-                BaseLabel title = new BaseLabel("Transactions", Color.RED, 0.5, 1.1);
-                title.setFont(new Font("Courier", Font.BOLD, 20));
-                plot.addPlotable(title);
-                // set axis label
-                plot.setAxisLabel(0, "time");
-                plot.setAxisLabel(1, "price");
-                
-                
+    			
+    			
+    			TimeSeriesCollection dataset = new TimeSeriesCollection();
+    			dataset.addSeries(s1);
+    			
+    			JFreeChart chart = ChartFactory.createTimeSeriesChart("Transactions", "time", "price", dataset);
+    			chart.setBackgroundPaint(Color.white);
+    			
+    			XYPlot plot = (XYPlot) chart.getPlot();
+    			plot.setBackgroundPaint(Color.lightGray);
+    			plot.setDomainGridlinePaint(Color.white);
+    			plot.setRangeGridlinePaint(Color.white);
+    			plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+    			plot.setDomainCrosshairVisible(true);
+    			plot.setRangeCrosshairVisible(true);
+    			
+    			XYItemRenderer r = plot.getRenderer();
+    			if (r instanceof XYLineAndShapeRenderer) {
+    			    XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
+    			    renderer.setBaseShapesVisible(true);
+    			    renderer.setBaseShapesFilled(true);
+    			    renderer.setDrawSeriesLineAsPath(true);
+    			}
+    			
+    			DateAxis axis = (DateAxis) plot.getDomainAxis();
+    			axis.setDateFormatOverride(new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"));
+
+    			
+    			ChartPanel panel = new ChartPanel(chart);
+    			panel.setFillZoomRectangle(true);
+    			panel.setMouseWheelEnabled(true);
                 // clear previews display, update with new display
                 int componentCount = contentPane.getComponentCount();
                 if(componentCount > 1){
                 	contentPane.remove(1);
                 }
-                contentPane.add(plot, BorderLayout.CENTER);
+                contentPane.add(panel, BorderLayout.CENTER);
                 contentPane.revalidate(); 	
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -174,29 +213,48 @@ public class MenuDemo implements ActionListener, ItemListener {
         	try {
 				Vector<Vector<Double>> array = OrderBookAPI.HttpGetOrderBook();
 				int n = array.get(0).size();
-                double[] x = new double[n];
-                double[] y = new double[n];
+				XYSeriesCollection dataset = new XYSeriesCollection();
+		        XYSeries data = new XYSeries("Bids");
+				
                 for(int i=0; i<n; i++){
-                	x[i]  = array.get(0).get(i);
-                	y[i]  = array.get(1).get(i);;
+                	data.add(array.get(0).get(i),array.get(1).get(i));
                 }
                 
-				Plot2DPanel plot = new Plot2DPanel();
-                plot.addLinePlot("my plot", x, y);
-                // add a title
-                BaseLabel title = new BaseLabel("Order Book", Color.RED, 0.5, 1.1);
-                title.setFont(new Font("Courier", Font.BOLD, 20));
-                plot.addPlotable(title);
-                // set axis label
-                plot.setAxisLabel(0, "price");
-                plot.setAxisLabel(1, "total buy");
+                //
+                int n1 = array.get(2).size();
+		        XYSeries data1 = new XYSeries("Asks");
+                for(int i=0; i<n1; i++){
+                	data1.add(array.get(2).get(i),array.get(3).get(i));
+                }
+                //
                 
+                dataset.addSeries(data);
+                dataset.addSeries(data1);
+                JFreeChart chart = ChartFactory.createScatterPlot(
+                        "Order Book",                  // chart title
+                        "Price",                      // x axis label
+                        "Value",                      // y axis label
+                        dataset,                  // data
+                        PlotOrientation.VERTICAL,
+                        true,                     // include legend
+                        true,                     // tooltips
+                        false                     // urls
+                    );
+                
+                XYPlot plot = (XYPlot) chart.getPlot();
+                XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+                renderer.setSeriesLinesVisible(0, true);
+                plot.setRenderer(renderer);
+                plot.setDomainCrosshairVisible(true);
+    			plot.setRangeCrosshairVisible(true);
+                
+    			ChartPanel chartPanel = new ChartPanel(chart);
                 // clear previews display, update with new display
                 int componentCount = contentPane.getComponentCount();
                 if(componentCount > 1){
                 	contentPane.remove(1);
                 }
-                contentPane.add(plot, BorderLayout.CENTER);
+                contentPane.add(chartPanel, BorderLayout.CENTER);
                 contentPane.revalidate();
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -244,12 +302,12 @@ public class MenuDemo implements ActionListener, ItemListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Create and set up the content pane.
-        MenuDemo demo = new MenuDemo();
+        BitstampAPIDisplay demo = new BitstampAPIDisplay();
         frame.setJMenuBar(demo.createMenuBar());
         frame.setContentPane(demo.createContentPane());
 
         //Display the window.
-        frame.setSize(750, 460);
+        frame.setSize(950, 560);
         frame.setVisible(true);
     }
 

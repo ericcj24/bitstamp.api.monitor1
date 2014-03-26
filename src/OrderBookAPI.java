@@ -1,37 +1,14 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Vector;
 
-import javax.swing.JFrame;
-
-import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import org.math.plot.*;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OrderBookAPI{
@@ -93,24 +70,18 @@ public class OrderBookAPI{
                 Vector<Vector<Double>> v = new Vector<Vector<Double>>();
                 v.add(x);
                 v.add(y);
-                /*System.out.println("bids are: " + " size is: "+ob.getAsks().size());
+                
+                System.out.println("asks size is: "+ob.getAsks().size());
+                Vector<Double> x1 = new Vector<Double>();
+                Vector<Double> y1 = new Vector<Double>();
                 for(int i=0; i<ob.getAsks().size(); i++){
-                	System.out.println(" price "+ob.getAsks().get(i).get(0)+" amount "+ob.getAsks().get(i).get(1));
-                }/*
-                int n = array.size();
-                double[] x = new double[n];
-                double[] y = new double[n];
-                for(int i=0; i<array.size(); i++){
-                	x[i] = Double.parseDouble(array.get(i).date);
-                	y[i] = Double.parseDouble(array.get(i).price);
+                	//System.out.println(" price "+ob.getAsks().get(i).get(0)+" amount "+ob.getAsks().get(i).get(1));
+                	x1.add(Double.parseDouble(ob.getAsks().get(i).get(0)));
+                	y1.add(Double.parseDouble(ob.getAsks().get(i).get(0)) * Double.parseDouble(ob.getAsks().get(i).get(1)));
                 }
-                Plot2DPanel plot = new Plot2DPanel();
-                plot.addScatterPlot("my plot", x, y);
-                JFrame frame = new JFrame("a plot panel");
-                frame.setSize(800, 600);
-                frame.setContentPane(plot);
-                frame.setVisible(true);
-                */
+                v.add(x1);
+                v.add(y1);
+                
                 // do something useful with the response body
                 // and ensure it is fully consumed
                 EntityUtils.consume(entity1);
