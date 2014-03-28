@@ -37,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -55,13 +56,18 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.SeriesRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StackedXYAreaRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.DefaultTableXYDataset;
+import org.jfree.data.xy.TableXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
@@ -286,26 +292,28 @@ public class BitstampAPIDisplay implements ActionListener, ItemListener {
     	try {
 			Vector<Vector<Double>> array = OrderBookAPI.HttpGetOrderBook();
 			int n = array.get(0).size();
-			XYSeriesCollection dataset = new XYSeriesCollection();
-	        XYSeries data = new XYSeries("Bids");
 			
+			DefaultTableXYDataset dataset = new DefaultTableXYDataset();
+	        XYSeries data = new XYSeries("Bids", true, false);
             for(int i=0; i<n; i++){
+            	if(array.get(0).get(i)<1000 && array.get(1).get(i)<10000)
             	data.add(array.get(0).get(i),array.get(1).get(i));
             }
             
             //
             int n1 = array.get(2).size();
-	        XYSeries data1 = new XYSeries("Asks");
+	        XYSeries data1 = new XYSeries("Asks", true, false);
             for(int i=0; i<n1; i++){
+            	if(array.get(2).get(i)<1000 && array.get(3).get(i)<10000)
             	data1.add(array.get(2).get(i),array.get(3).get(i));
             }
             //
             
             dataset.addSeries(data);
             dataset.addSeries(data1);
-            JFreeChart chart = ChartFactory.createScatterPlot(
+            /*JFreeChart chart = ChartFactory.createScatterPlot(
                     "Order Book",                  // chart title
-                    "Price",                      // x axis label
+                    "Price/USD",                      // x axis label
                     "Value",                      // y axis label
                     dataset,                  // data
                     PlotOrientation.VERTICAL,
@@ -320,6 +328,21 @@ public class BitstampAPIDisplay implements ActionListener, ItemListener {
             plot.setRenderer(renderer);
             plot.setDomainCrosshairVisible(true);
 			plot.setRangeCrosshairVisible(true);
+            */
+             
+            JFreeChart chart = ChartFactory.createStackedXYAreaChart(
+                    "Order Book", "Price/USD", "Value", dataset, PlotOrientation.VERTICAL, true, true, false);
+
+            StackedXYAreaRenderer render = new StackedXYAreaRenderer();
+            render.setSeriesPaint(0, Color.YELLOW);
+            render.setSeriesPaint(1, Color.BLUE);
+            XYPlot plot = (XYPlot) chart.getPlot();
+            plot.setRenderer(render);
+            plot.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
+            /*plot.setForegroundAlpha(0.5f);
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setNumberFormatOverride(new DecimalFormat("#,###.#"));
+            rangeAxis.setAutoRange(true);*/
             
 			ChartPanel chartPanel = new ChartPanel(chart);
             // clear previews display, update with new display
