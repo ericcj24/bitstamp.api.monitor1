@@ -67,7 +67,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
 public class BitstampAPIDisplay implements ActionListener, ItemListener {
-	static JFrame frame = new JFrame("MenuDemo");
+	static JFrame frame = new JFrame("Bitstamp Data");
 	static JPanel contentPane;
 	JTextArea output;
     JScrollPane scrollPane;
