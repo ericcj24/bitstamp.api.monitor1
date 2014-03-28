@@ -49,6 +49,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -68,10 +69,23 @@ import org.jfree.ui.RectangleInsets;
 
 public class BitstampAPIDisplay implements ActionListener, ItemListener {
 	static JFrame frame = new JFrame("MenuDemo");
-	JPanel contentPane;
+	static JPanel contentPane;
 	JTextArea output;
     JScrollPane scrollPane;
     String newline = "\n";
+    static Timer t;
+   //add action listener
+    static ActionListener l1 = new ActionListener(){
+    	public void actionPerformed(ActionEvent e) {
+    		callTransaction();
+    	}
+	};
+    static ActionListener l2 = new ActionListener(){
+    	public void actionPerformed(ActionEvent e) {
+    		callOrderBook();
+    	}
+	};
+	static int delay = 5000;
     
     public JMenuBar createMenuBar() {
         JMenuBar menuBar;
@@ -153,113 +167,35 @@ public class BitstampAPIDisplay implements ActionListener, ItemListener {
         String selectedItem = source.getText();
         if(selectedItem == "Transactions"){
         	output.append(selectedItem + newline);
-        	try {
-                
-                Vector<Vector<Double>> array = TransactionAPI.HttpGetTransactions();
-    			int n = array.get(0).size();
-    			TimeSeries s1 = new TimeSeries("Transactions");
-    			for(int i=0; i<n; i++){
-    				long dateLong = (long) (array.get(0).get(i)*1000);
-    		    	Date date = new Date(dateLong);
-    		    	Millisecond temp = new Millisecond(date);
-    		    	s1.addOrUpdate(temp, array.get(1).get(i));
-                }
-    			
-    			
-    			TimeSeriesCollection dataset = new TimeSeriesCollection();
-    			dataset.addSeries(s1);
-    			
-    			JFreeChart chart = ChartFactory.createTimeSeriesChart("Transactions", "time", "price", dataset);
-    			chart.setBackgroundPaint(Color.white);
-    			
-    			XYPlot plot = (XYPlot) chart.getPlot();
-    			plot.setBackgroundPaint(Color.lightGray);
-    			plot.setDomainGridlinePaint(Color.white);
-    			plot.setRangeGridlinePaint(Color.white);
-    			plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
-    			plot.setDomainCrosshairVisible(true);
-    			plot.setRangeCrosshairVisible(true);
-    			
-    			XYItemRenderer r = plot.getRenderer();
-    			if (r instanceof XYLineAndShapeRenderer) {
-    			    XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
-    			    renderer.setBaseShapesVisible(true);
-    			    renderer.setBaseShapesFilled(true);
-    			    renderer.setDrawSeriesLineAsPath(true);
-    			}
-    			
-    			DateAxis axis = (DateAxis) plot.getDomainAxis();
-    			axis.setDateFormatOverride(new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"));
 
-    			
-    			ChartPanel panel = new ChartPanel(chart);
-    			panel.setFillZoomRectangle(true);
-    			panel.setMouseWheelEnabled(true);
-                // clear previews display, update with new display
-                int componentCount = contentPane.getComponentCount();
-                if(componentCount > 1){
-                	contentPane.remove(1);
-                }
-                contentPane.add(panel, BorderLayout.CENTER);
-                contentPane.revalidate(); 	
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
+        	if(t.isRunning()){
+        		t.stop();
+        	}
+        	ActionListener[] test = t.getActionListeners();
+            if(test!=null){
+            	System.out.println("In Transaction, found actionListener!");
+            	t.removeActionListener(test[0]);
+            }
+            t.addActionListener(l1);
+        	t.setInitialDelay(0);
+        	t.setDelay(delay);
+    		t.start();
         }
         else if(selectedItem == "Order Book"){
         	output.append(selectedItem + newline);
-        	try {
-				Vector<Vector<Double>> array = OrderBookAPI.HttpGetOrderBook();
-				int n = array.get(0).size();
-				XYSeriesCollection dataset = new XYSeriesCollection();
-		        XYSeries data = new XYSeries("Bids");
-				
-                for(int i=0; i<n; i++){
-                	data.add(array.get(0).get(i),array.get(1).get(i));
-                }
-                
-                //
-                int n1 = array.get(2).size();
-		        XYSeries data1 = new XYSeries("Asks");
-                for(int i=0; i<n1; i++){
-                	data1.add(array.get(2).get(i),array.get(3).get(i));
-                }
-                //
-                
-                dataset.addSeries(data);
-                dataset.addSeries(data1);
-                JFreeChart chart = ChartFactory.createScatterPlot(
-                        "Order Book",                  // chart title
-                        "Price",                      // x axis label
-                        "Value",                      // y axis label
-                        dataset,                  // data
-                        PlotOrientation.VERTICAL,
-                        true,                     // include legend
-                        true,                     // tooltips
-                        false                     // urls
-                    );
-                
-                XYPlot plot = (XYPlot) chart.getPlot();
-                XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-                renderer.setSeriesLinesVisible(0, true);
-                plot.setRenderer(renderer);
-                plot.setDomainCrosshairVisible(true);
-    			plot.setRangeCrosshairVisible(true);
-                
-    			ChartPanel chartPanel = new ChartPanel(chart);
-                // clear previews display, update with new display
-                int componentCount = contentPane.getComponentCount();
-                if(componentCount > 1){
-                	contentPane.remove(1);
-                }
-                contentPane.add(chartPanel, BorderLayout.CENTER);
-                contentPane.revalidate();
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+        	
+        	if(t.isRunning()){
+        		t.stop();	
+        	}
+        	ActionListener[] test = t.getActionListeners();
+            if(test!=null){
+            	System.out.println("In Order Book, found actionListener!");
+            	t.removeActionListener(test[0]);
+            }
+            t.addActionListener(l2);
+    		t.setInitialDelay(0);
+    		t.setDelay(delay);
+    		t.start();
         }
         else if(selectedItem == "Refresh"){
         	output.append(selectedItem + newline);
@@ -290,6 +226,115 @@ public class BitstampAPIDisplay implements ActionListener, ItemListener {
         return classString.substring(dotIndex+1);
     }
 
+    
+    private static void callTransaction(){
+    	Vector<Vector<Double>> array;
+		try {
+			array = TransactionAPI.HttpGetTransactions();
+			int n = array.get(0).size();
+			TimeSeries s1 = new TimeSeries("Transactions");
+			for(int i=0; i<n; i++){
+				long dateLong = (long) (array.get(0).get(i)*1000);
+		    	Date date = new Date(dateLong);
+		    	Millisecond temp = new Millisecond(date);
+		    	s1.addOrUpdate(temp, array.get(1).get(i));
+	        }
+			
+			
+			TimeSeriesCollection dataset = new TimeSeriesCollection();
+			dataset.addSeries(s1);
+			
+			JFreeChart chart = ChartFactory.createTimeSeriesChart("Transactions", "time", "price", dataset);
+			chart.setBackgroundPaint(Color.white);
+			
+			XYPlot plot = (XYPlot) chart.getPlot();
+			plot.setBackgroundPaint(Color.lightGray);
+			plot.setDomainGridlinePaint(Color.white);
+			plot.setRangeGridlinePaint(Color.white);
+			plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+			plot.setDomainCrosshairVisible(true);
+			plot.setRangeCrosshairVisible(true);
+			
+			XYItemRenderer r = plot.getRenderer();
+			if (r instanceof XYLineAndShapeRenderer) {
+			    XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
+			    renderer.setBaseShapesVisible(true);
+			    renderer.setBaseShapesFilled(true);
+			    renderer.setDrawSeriesLineAsPath(true);
+			}
+			
+			DateAxis axis = (DateAxis) plot.getDomainAxis();
+			axis.setDateFormatOverride(new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"));
+
+			
+			ChartPanel panel = new ChartPanel(chart);
+			panel.setFillZoomRectangle(true);
+			panel.setMouseWheelEnabled(true);
+	        // clear previews display, update with new display
+	        int componentCount = contentPane.getComponentCount();
+	        if(componentCount > 1){
+	        	contentPane.remove(1);
+	        }
+	        contentPane.add(panel, BorderLayout.CENTER);
+	        contentPane.revalidate();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    private static void callOrderBook(){
+    	try {
+			Vector<Vector<Double>> array = OrderBookAPI.HttpGetOrderBook();
+			int n = array.get(0).size();
+			XYSeriesCollection dataset = new XYSeriesCollection();
+	        XYSeries data = new XYSeries("Bids");
+			
+            for(int i=0; i<n; i++){
+            	data.add(array.get(0).get(i),array.get(1).get(i));
+            }
+            
+            //
+            int n1 = array.get(2).size();
+	        XYSeries data1 = new XYSeries("Asks");
+            for(int i=0; i<n1; i++){
+            	data1.add(array.get(2).get(i),array.get(3).get(i));
+            }
+            //
+            
+            dataset.addSeries(data);
+            dataset.addSeries(data1);
+            JFreeChart chart = ChartFactory.createScatterPlot(
+                    "Order Book",                  // chart title
+                    "Price",                      // x axis label
+                    "Value",                      // y axis label
+                    dataset,                  // data
+                    PlotOrientation.VERTICAL,
+                    true,                     // include legend
+                    true,                     // tooltips
+                    false                     // urls
+                );
+            
+            XYPlot plot = (XYPlot) chart.getPlot();
+            XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+            renderer.setSeriesLinesVisible(0, true);
+            plot.setRenderer(renderer);
+            plot.setDomainCrosshairVisible(true);
+			plot.setRangeCrosshairVisible(true);
+            
+			ChartPanel chartPanel = new ChartPanel(chart);
+            // clear previews display, update with new display
+            int componentCount = contentPane.getComponentCount();
+            if(componentCount > 1){
+            	contentPane.remove(1);
+            }
+            contentPane.add(chartPanel, BorderLayout.CENTER);
+            contentPane.revalidate();
+    	} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    }
 
     /**
      * Create the GUI and show it.  For thread safety,
@@ -298,7 +343,6 @@ public class BitstampAPIDisplay implements ActionListener, ItemListener {
      */
     private static void createAndShowGUI() {
         //Create and set up the window.
-        //frame = ;
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Create and set up the content pane.
@@ -309,8 +353,10 @@ public class BitstampAPIDisplay implements ActionListener, ItemListener {
         //Display the window.
         frame.setSize(950, 560);
         frame.setVisible(true);
+        
+        t = new Timer(delay, l1);
     }
-
+    
     public static void main(String[] args) {
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
