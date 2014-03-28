@@ -1,5 +1,4 @@
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.http.HttpEntity;
@@ -12,27 +11,9 @@ import org.apache.http.util.EntityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OrderBookAPI{
+	
 	//{"timestamp": "1395686143", "bids": [["572.33", "0.17000000"], ["572.32", "0.17100000"],...]}
-	
-	static class OrderBook {
-	    private String timestamp;
-	    private ArrayList<ArrayList<String>> bids;
-	    private ArrayList<ArrayList<String>> asks;
-	    public OrderBook() {}
-	    
-	    public String getTimestamp(){
-	    	return timestamp;
-	    }
-	    public ArrayList<ArrayList<String>> getBids(){
-	    	return bids;
-	    }
-	    public ArrayList<ArrayList<String>> getAsks(){
-	    	return asks;
-	    }
-	}
-	
-	
-	
+
     public static Vector<Vector<Double>> HttpGetOrderBook() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         try {

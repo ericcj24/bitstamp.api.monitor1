@@ -14,38 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class TransactionAPI{
 	//{"date": "1395551812", "tid": 4151239, "price": "564.23", "amount": "0.05000000"}
 	
-	static class Transactions {
-	    private String date;
-	    private int tid;
-	    private String price;
-	    private String amount;
-	    public Transactions() {
-	    }
-	    public Transactions(String date, int tid, String price, String amount) {
-	      this.date = date;
-	      this.tid = tid;
-	      this.price = price;
-	      this.amount = amount;
-	    }
-	    @Override
-	    public String toString() {
-	      return String.format("(date=%s, tid=%d, price=%s, amount=%s)", date, tid, price, amount);
-	    }
-	    
-	    public String getDate(){
-	    	return date;
-	    }
-	    public int getTid(){
-	    	return tid;
-	    }
-	    public String getPrice(){
-	    	return price;
-	    }
-	    public String getAmount(){
-	    	return amount;
-	    }
-	}
-	
     public static Vector<Vector<Double>> HttpGetTransactions() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         try {
@@ -71,8 +39,8 @@ public class TransactionAPI{
                 Vector<Double> x = new Vector<Double>();
                 Vector<Double> y = new Vector<Double>();
                 for(int i=0; i<array.size(); i++){
-                	x.add(Double.parseDouble(array.get(i).date));
-                	y.add(Double.parseDouble(array.get(i).price));
+                	x.add(Double.parseDouble(array.get(i).getDate()));
+                	y.add(Double.parseDouble(array.get(i).getPrice()));
                 }
                 
                 Vector<Vector<Double>> v = new Vector<Vector<Double>>();
