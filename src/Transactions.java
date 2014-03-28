@@ -1,5 +1,6 @@
 /*
  * Transaction class used to bind JSON data from Transaction API
+ * https://www.bitstamp.net/api/transactions/
  * example JSON data:
 	{"date": "1395551812", "tid": 4151239, "price": "564.23", "amount": "0.05000000"}
 */
